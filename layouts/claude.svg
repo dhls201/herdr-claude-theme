@@ -3,49 +3,50 @@
   <rect width="320" height="200" fill="#141413"/>
 
   <!-- Drawer peek rail (44px) -->
-  <rect x="0" y="0" width="44" height="200" fill="#1b1a19"/>
-  <line x1="44" y1="0" x2="44" y2="200" stroke="#2e2d29" stroke-width="1"/>
+  <rect x="0" y="0" width="44" height="200" fill="#1f1e1b"/>
+  <line x1="44" y1="0" x2="44" y2="200" stroke="#2c2a26" stroke-width="1"/>
 
   <!-- Claude mark -->
-  <path d="M 22 10 L 24 16 L 30 18 L 24 20 L 22 26 L 20 20 L 14 18 L 20 16 Z" fill="#d97757"/>
+  <path d="M 22 10 L 24 16 L 30 18 L 24 20 L 22 26 L 20 20 L 14 18 L 20 16 Z" fill="#cc785c"/>
 
   <!-- Space badges (letter + status dot) -->
-  <rect x="13" y="40" width="18" height="18" rx="5" fill="#d97757"/>
+  <rect x="13" y="40" width="18" height="18" rx="5" fill="#cc785c"/>
   <rect x="17" y="46" width="10" height="6" rx="1" fill="#ffffff"/>
-  <rect x="13" y="66" width="18" height="18" rx="5" fill="#6a9bcc"/>
+  <rect x="13" y="66" width="18" height="18" rx="5" fill="#7aa6d6"/>
   <rect x="17" y="72" width="10" height="6" rx="1" fill="#ffffff"/>
-  <circle cx="31" cy="64" r="3" fill="#788c5d"/>
-  <rect x="13" y="92" width="18" height="18" rx="5" fill="#9d79bc"/>
+  <circle cx="31" cy="64" r="3" fill="#5db872"/>
+  <rect x="13" y="92" width="18" height="18" rx="5" fill="#b48ec9"/>
   <rect x="17" y="98" width="10" height="6" rx="1" fill="#ffffff"/>
-  <rect x="13" y="118" width="18" height="18" rx="5" fill="#788c5d"/>
+  <rect x="13" y="118" width="18" height="18" rx="5" fill="#5db8a6"/>
   <rect x="17" y="124" width="10" height="6" rx="1" fill="#ffffff"/>
-  <circle cx="31" cy="116" r="3" fill="#d97757"/>
+  <circle cx="31" cy="116" r="3" fill="#cc785c"/>
 
   <!-- Tab bar -->
   <rect x="44" y="0" width="276" height="28" fill="#141413"/>
-  <rect x="52" y="6" width="64" height="18" rx="5" fill="#242321" stroke="#d97757" stroke-width="1"/>
-  <rect x="60" y="13" width="32" height="4" rx="1" fill="#faf9f5"/>
-  <rect x="122" y="6" width="52" height="18" rx="5" fill="#1b1a19"/>
-  <rect x="130" y="13" width="28" height="4" rx="1" fill="#73716a"/>
+  <rect x="54" y="6" width="64" height="18" rx="5" fill="#252320" stroke="#cc785c" stroke-width="1"/>
+  <rect x="62" y="13" width="32" height="4" rx="1" fill="#faf9f5"/>
+  <rect x="124" y="6" width="52" height="18" rx="5" fill="#1f1e1b"/>
+  <rect x="132" y="13" width="28" height="4" rx="1" fill="#75726b"/>
 
-  <!-- Active pane -->
-  <rect x="52" y="32" width="260" height="148" rx="8" fill="#1c1b1a" stroke="#d97757" stroke-width="1"/>
-  <path d="M 53 33 L 311 33 L 311 48 L 53 48 Z" fill="#242321"/>
-  <rect x="60" y="38" width="40" height="4" rx="1" fill="#b0aea5"/>
-  <line x1="53" y1="48" x2="311" y2="48" stroke="#2e2d29" stroke-width="1"/>
+  <!-- Active pane (radius 12, focus ring = input colour) -->
+  <rect x="54" y="32" width="258" height="148" rx="12" fill="#181715" stroke="#3d3a35" stroke-width="1"/>
+  <path d="M 55 44 Q 55 33 66 33 L 300 33 Q 311 33 311 44 L 311 48 L 55 48 Z" fill="#1f1e1b"/>
+  <rect x="62" y="38" width="40" height="4" rx="1" fill="#a09d96"/>
+  <rect x="108" y="38" width="60" height="4" rx="1" fill="#75726b"/>
+  <line x1="55" y1="48" x2="311" y2="48" stroke="#2c2a26" stroke-width="1"/>
 
   <!-- Terminal lines -->
-  <rect x="62" y="58" width="12" height="4" rx="1" fill="#d97757"/>
-  <rect x="78" y="58" width="80" height="4" rx="1" fill="#faf9f5"/>
-  <rect x="62" y="70" width="140" height="4" rx="1" fill="#788c5d"/>
-  <rect x="62" y="80" width="100" height="4" rx="1" fill="#b0aea5"/>
-  <rect x="62" y="90" width="160" height="4" rx="1" fill="#b0aea5"/>
-  <rect x="62" y="102" width="120" height="4" rx="1" fill="#6a9bcc"/>
-  <rect x="62" y="118" width="8" height="4" rx="1" fill="#d97757"/>
-  <rect x="74" y="118" width="6" height="8" rx="1" fill="#d97757"/>
+  <rect x="64" y="58" width="12" height="4" rx="1" fill="#cc785c"/>
+  <rect x="80" y="58" width="80" height="4" rx="1" fill="#faf9f5"/>
+  <rect x="64" y="70" width="140" height="4" rx="1" fill="#5db872"/>
+  <rect x="64" y="80" width="100" height="4" rx="1" fill="#a09d96"/>
+  <rect x="64" y="90" width="160" height="4" rx="1" fill="#a09d96"/>
+  <rect x="64" y="102" width="120" height="4" rx="1" fill="#7aa6d6"/>
+  <rect x="64" y="118" width="8" height="4" rx="1" fill="#cc785c"/>
+  <rect x="76" y="118" width="6" height="8" rx="1" fill="#cc785c"/>
 
   <!-- Status bar -->
-  <rect x="44" y="188" width="276" height="12" fill="#1b1a19"/>
-  <rect x="52" y="192" width="30" height="4" rx="1" fill="#73716a"/>
-  <rect x="280" y="192" width="28" height="4" rx="1" fill="#788c5d"/>
+  <rect x="44" y="188" width="276" height="12" fill="#1f1e1b"/>
+  <rect x="54" y="192" width="30" height="4" rx="1" fill="#75726b"/>
+  <rect x="280" y="192" width="28" height="4" rx="1" fill="#5db872"/>
 </svg>

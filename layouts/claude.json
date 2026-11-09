@@ -11,7 +11,7 @@
   },
   "font": "Anthropic Mono Variable",
   "font_size": 14,
-  "ui_font": "Anthropic Sans Web Text",
+  "ui_font": "Anthropic Sans Web",
   "preview": "layouts/claude.svg",
   "titlebar": "none",
   "traffic_lights": [
@@ -41,54 +41,12 @@
       "resizable": false,
       "children": [
         {
-          "id": "brand",
+          "id": "sidebar-claude",
           "type": "block",
-          "size": {
-            "px": 46
-          },
-          "window_drag": true,
           "content": {
-            "mod": "workspace-chrome"
-          }
-        },
-        {
-          "id": "sidebar-lists",
-          "type": "column",
-          "children": [
-            {
-              "id": "spaces",
-              "type": "block",
-              "size": {
-                "weight": 1
-              },
-              "min": 90,
-              "content": {
-                "mod": "spaces"
-              }
-            },
-            {
-              "id": "agents",
-              "type": "block",
-              "size": {
-                "weight": 1
-              },
-              "min": 90,
-              "content": {
-                "mod": "agents"
-              }
-            }
-          ]
-        },
-        {
-          "id": "sidebar-footer",
-          "type": "block",
-          "size": {
-            "px": 69
-          },
-          "content": {
-            "mod": "workspace-chrome",
+            "mod": "claude-drawer",
             "props": {
-              "footer": true
+              "pinned": true
             }
           }
         }
@@ -113,8 +71,8 @@
         {
           "id": "work-body",
           "type": "row",
-          "padding": 8,
-          "gap": 8,
+          "padding": 10,
+          "gap": 10,
           "floating": [
             {
               "id": "claude-drawer",
@@ -142,8 +100,8 @@
               "content": {
                 "tab": "active",
                 "pane": {
-                  "gap": 8,
-                  "radius": 10,
+                  "gap": 10,
+                  "radius": 12,
                   "background": "background",
                   "lone": true,
                   "border": {
@@ -152,15 +110,15 @@
                   },
                   "focus": {
                     "width": 1,
-                    "color": "accent"
+                    "color": "input"
                   },
                   "header": {
                     "content": {
-                      "mod": "pane"
+                      "mod": "claude-pane"
                     },
                     "height": 30,
                     "position": "top",
-                    "reveal": "hover"
+                    "reveal": "always"
                   }
                 }
               }
