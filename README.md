@@ -49,6 +49,8 @@ Two placements, one mod:
 
 Space badge colours come from `shared.json` (`space.colors`) when set, otherwise from a warm palette hashed by name.
 
+With more than one machine in play, both the Spaces and the Agents list group by machine: a monitor or server icon with a live connection dot (`hc machine ls`, polled every 15s), a per-machine `+` for a new space there, a fold arrow per group, and the fold state remembered across restarts. Spaces with no machine stay under "This computer".
+
 ### The pane header
 
 `mods/claude-pane` replaces the stock header: agent icon, name, cwd (home shortened to `~`), a spinner while working, a `Needs input` pill when blocked, and split / zoom / close buttons on the right. The focus ring uses the `input` colour rather than the accent, so a focused pane reads as a quiet outline instead of a highlight.
@@ -101,5 +103,5 @@ ANSI:
 ## Notes
 
 - Unofficial. Not affiliated with Anthropic; the palette is hand-picked to feel like Claude's UI, no Anthropic assets are included.
-- Built for Herdr 0.1.13 (layout cloned from the shipped `main` layout).
+- Built for Herdr 0.1.15 (layout cloned from the shipped `main` layout).
 - Screenshots taken with `herdr-app shot` on a throwaway space; no space names or hostnames appear in them.

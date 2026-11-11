@@ -17,8 +17,12 @@ import {
   updates,
   layout,
   props,
+  machines,
+  hc,
   window as appWindow,
 } from "herdr";
+
+const FOLD_KEY = "machines.folded";
 
 function findNode(node, id) {
   if (node?.id === id) return node;
@@ -194,11 +198,113 @@ function sectionLabel(id, label, count, onRight, t) {
 }
 
 export default class ClaudeDrawer extends View {
-  init() {
+  init(_props, cx) {
     this.wasVisible = false;
     this.shown = false; // 进场动画目标
     this.leaving = false; // 退场动画中
     this.syncing = false;
+    // 机器分组：折叠状态持久化；连接状态每 15s 用 hc 问一次（浮层动画副本不问）
+    this.folded = new Set(JSON.parse(localStorage.getItem(FOLD_KEY) ?? "[]"));
+    this.hosts = [];
+    if (!props()?.ghost && cx?.timer) {
+      cx.timer.after(10, (cx) => this.refreshHosts(cx));
+      cx.timer.every(15000, (cx) => this.refreshHosts(cx));
+    }
+  }
+
+  async refreshHosts(cx) {
+    try {
+      const r = await hc(["machine", "ls", "--json"]);
+      if (r.code === 0) {
+        this.hosts = (JSON.parse(r.stdout).machines ?? []).filter((m) => !m.temporary);
+        cx.notify();
+      }
+    } catch {}
+  }
+
+  // scope: "sp"（Spaces，旧的折叠键不变）或 "ag"（Agents，独立折叠）
+  foldKey(m, scope = "sp") {
+    return scope === "sp" ? (m ?? "") : `${scope}:${m ?? ""}`;
+  }
+
+  toggleFold(m, cx, scope = "sp") {
+    const key = this.foldKey(m, scope);
+    this.folded.has(key) ? this.folded.delete(key) : this.folded.add(key);
+    localStorage.setItem(FOLD_KEY, JSON.stringify([...this.folded]));
+    cx.notify();
+  }
+
+  // 机器分组标题：收起时是 显示器/服务器 图标 + 连接圆点；展开后是 名称 · 数量 · + · 折叠箭头
+  machineHeader(m, count, onRight, t, scope = "sp", urgent = null) {
+    const host = this.hosts.find((h) => h.name === m);
+    const layoutState = machines().find((k) => k.name === m)?.layout;
+    const connected = !m || host?.state === "connected" || (!host && layoutState === "ready");
+    const state = connected ? "connected" : (host?.state ?? layoutState ?? "asleep").replace(/_/g, " ");
+    const folded = this.folded.has(this.foldKey(m, scope));
+    const label = m ?? "This computer";
+    const canAdd = connected && scope === "sp";
+
+    const edge = tile(
+      svg(`mods/workspace-chrome/${m ? "server" : "monitor"}.svg`).size(14).text_color(t.dim),
+      false,
+      t
+    ).child(
+      div()
+        .absolute()
+        .bottom(2)
+        .right(2)
+        .size(7)
+        .rounded_full()
+        .border_1()
+        .border_color(t.background)
+        .bg(connected ? t.done ?? t.ansi2 : t.dim)
+    );
+    // 折叠的 Agents 组里有需要关注的：收起态也能看到
+    if (folded && urgent) edge.child(statusDot(urgent, t, 6));
+
+    const body = h_flex()
+      .w_full()
+      .min_w(0)
+      .items_center()
+      .gap(6)
+      .text_size(11.5)
+      .text_color(t.dim)
+      .child(div().flex_1().min_w(0).truncate().font_medium().child(label))
+      .when(!connected, (s) => s.child(div().flex_none().text_size(10.5).child(state)))
+      .when(folded && Boolean(urgent), (s) =>
+        s.child(div().flex_none().size(6).rounded_full().bg(statusColor(urgent, t)))
+      )
+      .when(folded, (s) => s.child(div().flex_none().text_size(10.5).child(String(count))))
+      .when(canAdd, (s) =>
+        s.child(
+          div()
+            .id(`drawer-machine-add-${m ?? "local"}`)
+            .size(18)
+            .flex_none()
+            .rounded(5)
+            .flex()
+            .items_center()
+            .justify_center()
+            .hover((h) => h.bg(t.hover))
+            .tooltip(`New space on ${label}`)
+            .on_click((_e, cx) => {
+              cx.stop_propagation();
+              run("space.new", { machine: m ?? "" });
+            })
+            .child(svg("mods/workspace-chrome/plus.svg").size(11).text_color(t.dim))
+        )
+      )
+      .child(
+        svg(`mods/workspace-chrome/chevron-${folded ? "right" : "down"}.svg`)
+          .size(11)
+          .flex_none()
+          .text_color(t.dim)
+      );
+
+    return row(`drawer-${scope}-machine-${m ?? "local"}`, onRight, 26, edge, body, t)
+      .mt(4)
+      .tooltip(`${label} · ${state}`)
+      .on_click((_e, cx) => this.toggleFold(m, cx, scope));
   }
 
   // 动画放在一个透明浮层里由 GPUI 原生绘制（帧率跟屏幕一致），布局只在开头或结尾切一次，
@@ -377,9 +483,9 @@ export default class ClaudeDrawer extends View {
       row("drawer-new", onRight, ROW + 4, newEdge, newBody, t).on_click(() => run("space.new"))
     );
 
-    // 2. Spaces
+    // 2. Spaces（有远程机器时按机器分组）
     root.child(sectionLabel("drawer-spaces-label", "Spaces", spaceList.length, onRight, t));
-    for (const w of spaceList) {
+    const drawSpace = (w) => {
       const first = [...(w.name || "")][0] ?? "";
       const letter = /[\p{L}\p{N}]/u.test(first) ? first.toUpperCase() : null;
       const agg = aggregateSpaceStatus(w.id, agentList, focusedPane);
@@ -404,20 +510,35 @@ export default class ClaudeDrawer extends View {
         .when(!w.active, (el) => el.text_color(t.muted))
         .child(w.name === "~" ? "Home" : w.name);
 
-      root.child(
-        row(`drawer-space-${w.id}`, onRight, ROW, edge, body, t, true, w.active, expanded)
-          .on_click(() => run("space.select", { id: w.id }))
-          .on_mouse_down("right", (ev) =>
-            openOverlay({
-              mod: "menu",
-              kind: "popup",
-              width: 200,
-              height: 260,
-              anchor: ev.mouse,
-              props: { tab: "space", target: { id: w.id } },
-            })
-          )
-      );
+      return row(`drawer-space-${w.id}`, onRight, ROW, edge, body, t, true, w.active, expanded)
+        .on_click(() => run("space.select", { id: w.id }))
+        .on_mouse_down("right", (ev) =>
+          openOverlay({
+            mod: "menu",
+            kind: "popup",
+            width: 200,
+            height: 260,
+            anchor: ev.mouse,
+            props: { tab: "space", target: { id: w.id } },
+          })
+        );
+    };
+
+    const remote = [
+      ...new Set([
+        ...spaceList.map((s) => s.machine).filter(Boolean),
+        ...this.hosts.map((h) => h.name),
+      ]),
+    ].sort();
+    if (!remote.length) {
+      for (const w of spaceList) root.child(drawSpace(w));
+    } else {
+      for (const m of [null, ...remote]) {
+        const mine = spaceList.filter((s) => (s.machine ?? null) === m);
+        root.child(this.machineHeader(m, mine.length, onRight, t));
+        if (this.folded.has(m ?? "")) continue;
+        for (const w of mine) root.child(drawSpace(w));
+      }
     }
 
     // 3. Agents
@@ -435,7 +556,7 @@ export default class ClaudeDrawer extends View {
         )
       );
     } else {
-      for (const a of agentList) {
+      const drawAgent = (a) => {
         const isFocused = Boolean(
           a.focused ||
             (foc &&
@@ -507,11 +628,30 @@ export default class ClaudeDrawer extends View {
                   .child(a.status === "working" ? "Working" : spaceName)
           );
 
-        root.child(
-          row(`drawer-agent-${a.address}`, onRight, ROW, edge, body, t, true, isFocused, expanded).on_click(() =>
-            run("pane.focus", { pane: a.pane })
-          )
+        return row(`drawer-agent-${a.address}`, onRight, ROW, edge, body, t, true, isFocused, expanded).on_click(() =>
+          run("pane.focus", { pane: a.pane })
         );
+      };
+
+      // 有远程机器时按机器分组（只列出有 agent 的机器）；机器取自所属 space，其次取地址前缀
+      const spaceMachine = new Map(spaceList.map((s) => [s.id, s.machine ?? null]));
+      const machineOf = (a) =>
+        spaceMachine.get(a.space) ?? (a.address.includes("/") ? a.address.split("/")[0] : null);
+      const RANK = { blocked: 3, done: 2, working: 1 };
+      if (!remote.length) {
+        for (const a of agentList) root.child(drawAgent(a));
+      } else {
+        for (const m of [null, ...remote]) {
+          const mine = agentList.filter((a) => machineOf(a) === m);
+          if (!mine.length) continue;
+          const urgent = mine.reduce(
+            (top, a) => ((RANK[a.status] ?? 0) > (RANK[top] ?? 0) ? a.status : top),
+            null
+          );
+          root.child(this.machineHeader(m, mine.length, onRight, t, "ag", urgent));
+          if (this.folded.has(this.foldKey(m, "ag"))) continue;
+          for (const a of mine) root.child(drawAgent(a));
+        }
       }
     }
 
